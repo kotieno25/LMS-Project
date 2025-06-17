@@ -12,6 +12,7 @@ import {
   Paper,
   Link,
   Alert,
+  CircularProgress,
 } from '@mui/material';
 import { login, clearError } from '../store/slices/authSlice';
 
@@ -44,8 +45,12 @@ function Login() {
       password: '',
     },
     validationSchema,
-    onSubmit: (values) => {
-      dispatch(login(values));
+    onSubmit: async (values) => {
+      try {
+        await dispatch(login(values)).unwrap();
+      } catch (err) {
+        // Error is handled by the auth slice
+      }
     },
   });
 
@@ -96,6 +101,7 @@ function Login() {
               onBlur={formik.handleBlur}
               error={formik.touched.email && Boolean(formik.errors.email)}
               helperText={formik.touched.email && formik.errors.email}
+              disabled={loading}
             />
             <TextField
               margin="normal"
@@ -111,6 +117,7 @@ function Login() {
               onBlur={formik.handleBlur}
               error={formik.touched.password && Boolean(formik.errors.password)}
               helperText={formik.touched.password && formik.errors.password}
+              disabled={loading}
             />
             <Button
               type="submit"
@@ -119,7 +126,11 @@ function Login() {
               sx={{ mt: 3, mb: 2 }}
               disabled={loading}
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? (
+                <CircularProgress size={24} color="inherit" />
+              ) : (
+                'Sign In'
+              )}
             </Button>
             <Box sx={{ textAlign: 'center' }}>
               <Link href="/register" variant="body2">

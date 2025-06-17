@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   Container,
   Paper,
@@ -15,11 +15,12 @@ import {
   Alert,
   CircularProgress
 } from '@mui/material';
-import { register } from '../store/slices/authSlice';
+import { register, clearError } from '../store/slices/authSlice';
 
 const Register = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { loading, error: authError, isAuthenticated } = useSelector((state) => state.auth);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -28,7 +29,15 @@ const Register = () => {
     role: 'student'
   });
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/');
+    }
+    return () => {
+      dispatch(clearError());
+    };
+  }, [isAuthenticated, navigate, dispatch]);
 
   const handleChange = (e) => {
     setFormData({
@@ -40,11 +49,9 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
 
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
-      setLoading(false);
       return;
     }
 
@@ -61,8 +68,6 @@ const Register = () => {
       }
     } catch (err) {
       setError(err.message || 'Registration failed');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -81,9 +86,9 @@ const Register = () => {
             Register
           </Typography>
           
-          {error && (
+          {(error || authError) && (
             <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
+              {error || authError}
             </Alert>
           )}
 
@@ -99,6 +104,7 @@ const Register = () => {
               autoFocus
               value={formData.name}
               onChange={handleChange}
+              disabled={loading}
             />
             
             <TextField
@@ -112,6 +118,7 @@ const Register = () => {
               type="email"
               value={formData.email}
               onChange={handleChange}
+              disabled={loading}
             />
             
             <TextField
@@ -125,6 +132,7 @@ const Register = () => {
               autoComplete="new-password"
               value={formData.password}
               onChange={handleChange}
+              disabled={loading}
             />
             
             <TextField
@@ -137,6 +145,7 @@ const Register = () => {
               id="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleChange}
+              disabled={loading}
             />
             
             <FormControl fullWidth margin="normal">
@@ -148,6 +157,7 @@ const Register = () => {
                 value={formData.role}
                 label="Role"
                 onChange={handleChange}
+                disabled={loading}
               >
                 <MenuItem value="student">Student</MenuItem>
                 <MenuItem value="instructor">Instructor</MenuItem>

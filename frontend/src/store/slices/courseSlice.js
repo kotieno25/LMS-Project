@@ -94,6 +94,21 @@ export const enrollInCourse = createAsyncThunk(
   }
 );
 
+export const fetchUserCourses = createAsyncThunk(
+  'courses/fetchUserCourses',
+  async (_, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API_URL}/courses/user/courses`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
 const initialState = {
   courses: [],
   currentCourse: null,
@@ -206,6 +221,19 @@ const courseSlice = createSlice({
       .addCase(enrollInCourse.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload?.message || 'Failed to enroll in course';
+      })
+      // Fetch User Courses
+      .addCase(fetchUserCourses.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchUserCourses.fulfilled, (state, action) => {
+        state.loading = false;
+        state.courses = action.payload;
+      })
+      .addCase(fetchUserCourses.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message || 'Failed to fetch user courses';
       });
   }
 });

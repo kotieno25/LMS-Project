@@ -9,10 +9,15 @@ export const login = createAsyncThunk(
   async (credentials, { rejectWithValue }) => {
     try {
       const response = await axios.post(`${API_URL}/auth/login`, credentials);
-      localStorage.setItem('token', response.data.token);
-      return response.data;
+      if (response.data && response.data.token) {
+        localStorage.setItem('token', response.data.token);
+        return response.data;
+      }
+      return rejectWithValue({ message: 'Invalid response from server' });
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(
+        error.response?.data || { message: 'Network error occurred' }
+      );
     }
   }
 );
@@ -22,10 +27,15 @@ export const register = createAsyncThunk(
   async (userData, { rejectWithValue }) => {
     try {
       const response = await axios.post(`${API_URL}/auth/register`, userData);
-      localStorage.setItem('token', response.data.token);
-      return response.data;
+      if (response.data && response.data.token) {
+        localStorage.setItem('token', response.data.token);
+        return response.data;
+      }
+      return rejectWithValue({ message: 'Invalid response from server' });
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(
+        error.response?.data || { message: 'Network error occurred' }
+      );
     }
   }
 );
