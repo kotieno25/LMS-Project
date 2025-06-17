@@ -30,6 +30,17 @@ A full-stack Learning Management System similar to Canvas LMS, built with the ME
 - React Router
 - Axios
 
+## Recent Fixes Applied
+
+The following issues have been resolved:
+
+1. **Missing Frontend Pages**: Created `Register.js`, `Dashboard.js`, and `Profile.js` components
+2. **Missing Backend Controllers**: Created `courseController.js`, `assignmentController.js`, and `gradeController.js`
+3. **Missing API Services**: Created `api.js` service file for frontend API calls
+4. **Missing Auth Routes**: Added profile update route to auth routes
+5. **Missing Redux Actions**: Added `updateProfile` action to auth slice
+6. **Environment Configuration**: Created example environment files for both frontend and backend
+
 ## System Structure and Navigation
 
 ### User Roles and Access
@@ -87,31 +98,22 @@ A full-stack Learning Management System similar to Canvas LMS, built with the ME
 ```
 frontend/src/
 ├── components/
-│   ├── Layout/              # Main layout components
-│   │   ├── Header.js        # Top navigation bar
-│   │   ├── Sidebar.js       # Side navigation
-│   │   └── Footer.js        # Footer component
-│   ├── Course/             # Course-related components
-│   │   ├── CourseCard.js    # Course preview card
-│   │   ├── ModuleList.js    # List of course modules
-│   │   └── AssignmentList.js # List of assignments
-│   ├── Common/             # Reusable components
-│   │   ├── Button.js        # Custom button component
-│   │   ├── Input.js         # Custom input component
-│   │   └── Modal.js         # Modal dialog component
-│   └── Auth/               # Authentication components
-│       ├── LoginForm.js     # Login form
-│       └── RegisterForm.js  # Registration form
-├── pages/                  # Main page components
-│   ├── Dashboard.js        # Main dashboard
-│   ├── CourseList.js       # Course listing page
-│   ├── CourseDetail.js     # Course details page
-│   └── Profile.js          # User profile page
-└── store/                  # Redux store
-    ├── slices/             # Redux slices
-    │   ├── authSlice.js    # Authentication state
-    │   └── courseSlice.js  # Course state
-    └── index.js            # Store configuration
+│   ├── Layout.js            # Main layout component
+│   └── PrivateRoute.js      # Protected route wrapper
+├── pages/                   # Main page components
+│   ├── Dashboard.js         # Main dashboard
+│   ├── CourseList.js        # Course listing page
+│   ├── CourseDetail.js      # Course details page
+│   ├── Login.js             # Login page
+│   ├── Register.js          # Registration page
+│   └── Profile.js           # User profile page
+├── services/
+│   └── api.js               # API service functions
+└── store/                   # Redux store
+    ├── slices/              # Redux slices
+    │   ├── authSlice.js     # Authentication state
+    │   └── courseSlice.js   # Course state
+    └── index.js             # Store configuration
 ```
 
 ### Data Flow
@@ -151,7 +153,11 @@ cd backend
 npm install
 ```
 
-3. Create a `.env` file in the backend directory with the following variables:
+3. Create a `.env` file in the backend directory:
+```bash
+cp env.example .env
+```
+Then edit the `.env` file with your configuration:
 ```
 PORT=5000
 MONGODB_URI=mongodb://localhost:27017/lms
@@ -166,6 +172,10 @@ npm install
 ```
 
 5. Create a `.env` file in the frontend directory:
+```bash
+cp env.example .env
+```
+Then edit the `.env` file:
 ```
 REACT_APP_API_URL=http://localhost:5000/api
 ```
@@ -199,14 +209,28 @@ The application will be available at:
 - POST /api/auth/register - Register a new user
 - POST /api/auth/login - Login user
 - GET /api/auth/me - Get current user
+- PUT /api/auth/profile - Update user profile
 
 ### Courses
 - GET /api/courses - Get all courses
+- GET /api/courses/user/courses - Get user's courses
 - POST /api/courses - Create a new course
 - GET /api/courses/:id - Get course by ID
 - PUT /api/courses/:id - Update course
 - DELETE /api/courses/:id - Delete course
 - POST /api/courses/:id/enroll - Enroll in course
+
+### Assignments
+- GET /api/assignments/course/:courseId - Get course assignments
+- POST /api/assignments - Create assignment
+- PUT /api/assignments/:courseId/:moduleId/:assignmentId - Update assignment
+- DELETE /api/assignments/:courseId/:moduleId/:assignmentId - Delete assignment
+
+### Grades
+- GET /api/grades/course/:courseId - Get course grades
+- GET /api/grades/student/:courseId - Get student grades
+- POST /api/grades/submit/:courseId/:moduleId/:assignmentId - Submit assignment
+- POST /api/grades/grade/:courseId/:moduleId/:assignmentId/:studentId - Grade assignment
 
 ## Project Structure
 
@@ -215,22 +239,63 @@ lms-project/
 ├── backend/
 │   ├── src/
 │   │   ├── controllers/       # Route handlers
+│   │   │   ├── courseController.js
+│   │   │   ├── assignmentController.js
+│   │   │   └── gradeController.js
 │   │   ├── models/           # Data models
+│   │   │   ├── User.js
+│   │   │   └── Course.js
 │   │   ├── routes/           # API endpoints
+│   │   │   ├── auth.js
+│   │   │   ├── courses.js
+│   │   │   ├── assignments.js
+│   │   │   └── grades.js
 │   │   ├── middleware/       # Auth & validators
-│   │   ├── config/           # DB & env config
+│   │   │   └── auth.js
 │   │   └── server.js         # Entry point
+│   ├── env.example           # Environment template
+│   └── package.json
 ├── frontend/
 │   ├── public/
 │   ├── src/
 │   │   ├── components/       # Reusable UI
+│   │   │   ├── Layout.js
+│   │   │   └── PrivateRoute.js
 │   │   ├── pages/           # Main views
-│   │   ├── store/           # State management
+│   │   │   ├── Dashboard.js
+│   │   │   ├── CourseList.js
+│   │   │   ├── CourseDetail.js
+│   │   │   ├── Login.js
+│   │   │   ├── Register.js
+│   │   │   └── Profile.js
 │   │   ├── services/        # API calls
-│   │   ├── utils/           # Helpers
+│   │   │   └── api.js
+│   │   ├── store/           # State management
+│   │   │   ├── slices/
+│   │   │   │   ├── authSlice.js
+│   │   │   │   └── courseSlice.js
+│   │   │   └── index.js
 │   │   └── App.js           # Root component
+│   ├── env.example          # Environment template
+│   └── package.json
 └── README.md
 ```
+
+## Troubleshooting
+
+### Common Issues
+
+1. **MongoDB Connection Error**: Make sure MongoDB is running and the connection string is correct
+2. **JWT Secret Missing**: Ensure JWT_SECRET is set in your backend .env file
+3. **CORS Issues**: Check that the frontend URL is correctly configured in the backend
+4. **Port Conflicts**: Make sure ports 3000 (frontend) and 5000 (backend) are available
+
+### Development Tips
+
+1. Use the provided environment templates (`env.example`) to set up your configuration
+2. Check the browser console and server logs for detailed error messages
+3. Ensure all dependencies are installed in both frontend and backend directories
+4. Test API endpoints using tools like Postman before integrating with the frontend
 
 ## Contributing
 
